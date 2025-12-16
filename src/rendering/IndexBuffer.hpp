@@ -7,6 +7,7 @@ namespace RR {
         GLuint id = -1;
         GLsizeiptr length;
 
+        IndexBuffer();
         IndexBuffer(const GLuint data[], GLsizeiptr n, GLenum usage);
         ~IndexBuffer();
         IndexBuffer(IndexBuffer&& other) noexcept;

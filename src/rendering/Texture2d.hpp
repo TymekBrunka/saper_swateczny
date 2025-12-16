@@ -15,7 +15,8 @@ namespace RR {
 	class Texture2d {
 	public:
 		GLuint id = -1;
-		
+
+		Texture2d();
 		Texture2d(image_data& data, GLenum interp_mode = GL_LINEAR, GLenum clamp_mode = GL_CLAMP_TO_EDGE);
 		Texture2d(GLuint id);
 		~Texture2d();

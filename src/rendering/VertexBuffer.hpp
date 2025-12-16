@@ -8,6 +8,7 @@ namespace RR {
         GLuint id = -1;
         GLsizeiptr length;
 
+        VertexBuffer() {}
         VertexBuffer(const T data[], GLsizeiptr n, GLenum usage) {
             glGenBuffers(1, &this->id);
             glBindBuffer(GL_ARRAY_BUFFER, this->id);

@@ -8,6 +8,7 @@ namespace RR {
         GLuint id = -1;
         GLsizeiptr length;
 
+        SSBuffer() {};
         SSBuffer(const T data[], GLsizeiptr n) {
             glGenBuffers(1, &this->id);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, this->id);

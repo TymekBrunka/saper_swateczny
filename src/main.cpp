@@ -1,10 +1,11 @@
 #include <cstdlib>
 #include <glad/gl.h>
-#include <nfd.h>
 #include "SSBuffer.hpp"
 #include "glm/fwd.hpp"
 #include "rr.hpp"
+
 #include "Camera.hpp"
+#include "SpriteInstancing.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -3,6 +3,9 @@
 
 #include <glad/gl.h>
 #include "glMathTypes.hpp"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 #include "Program.hpp"
 // #include <glm/vec2.hpp>
 // #include <glm/vec3.hpp>
@@ -32,6 +35,24 @@ namespace RR {
         static const GLenum type = GL_FLOAT;
     };
 
+    template<>
+    struct ATTRIB_SPECS<glm::vec2> {
+        static const GLint size = 2;
+        static const GLenum type = GL_FLOAT;
+    };
+
+    template<>
+    struct ATTRIB_SPECS<glm::vec3> {
+        static const GLint size = 3;
+        static const GLenum type = GL_FLOAT;
+    };
+
+    template<>
+    struct ATTRIB_SPECS<glm::mat4> {
+        static const GLint size = 16;
+        static const GLenum type = GL_FLOAT;
+    };
+
     #define RR_AUTOATTRIB(Struct, Field, Normalized) RR::f__RR_AUTOATTRIB<decltype(Struct::Field)>(program, Normalized, location_##Field, (const char*)#Field, (void*)offsetof(Struct, Field), sizeof(Struct))
 
     template<typename T/*, typename F*/>
@@ -46,6 +67,8 @@ namespace RR {
             stride, offset
         );
     }
+
+    #define RR_ATTRIBDEVISOR1(x) glVertexAttribDivisor(location##x, 1)
 }
 
 #endif

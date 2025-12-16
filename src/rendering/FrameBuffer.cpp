@@ -4,6 +4,8 @@
 #include <string>
 
 namespace RR {
+	FrameBuffer::FrameBuffer() {}
+
 	FrameBuffer::FrameBuffer(int width, int height, int num_outputs) {
 		GLuint framebuffer;
 		glGenFramebuffers(1, &framebuffer);
