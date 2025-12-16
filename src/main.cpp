@@ -23,7 +23,6 @@ int width, height;
 GLint UmouseP;
 
 RR::SSBuffer<int>* tiles = nullptr;
-RR::SSBuffer<int>* selected = nullptr;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -136,6 +135,12 @@ int main() {
     RR::Texture2d texture(img);
     stbi_image_free(img.data);
 
+    img = RR::readImage("src/sprites.png");
+    RR::Texture2d sprites(img);
+    stbi_image_free(img.data);
+
+    int* _tiles = new int[16];
+
 	glUseProgram(program.id);
     texture.bindToSlotAndName(program, 0, "skybox");
 
@@ -193,6 +198,8 @@ int main() {
 
 	RR_AUTOATTRIB(skybox_vert, pos, GL_TRUE);
 	RR_AUTOATTRIB(skybox_vert, uv, GL_TRUE);
+
+    
 
 	//Camera
 	camera.update_projection(800, 600, 120);
