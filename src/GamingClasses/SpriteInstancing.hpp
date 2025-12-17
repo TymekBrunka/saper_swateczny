@@ -37,5 +37,6 @@ public:
 
 	SpriteInstancing(RR::Program& program, GLintptr amount);
 	void prepareInstancing(RR::Program& program);
-	// void set(int index, SpriteVertex& vertex);
+	void set(int index, SpriteVertex& vertex);
+	void bind();
 };

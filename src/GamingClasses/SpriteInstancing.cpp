@@ -23,6 +23,10 @@ void SpriteInstancing::prepareInstancing(RR::Program& program) {
 	RR_AUTOATTRIB(SpriteVertexReal, sprite_vec_var, GL_TRUE);
 }
 
-void set(int index, SpriteVertex& vertex) {
+void SpriteInstancing::set(int index, SpriteVertex& vertex) {
 	glBufferSubData(GL_ARRAY_BUFFER, (GLintptr)(sizeof(SpriteVertex) * index), (GLintptr)sizeof(SpriteVertex), &vertex);
+}
+
+void SpriteInstancing::bind() {
+	glBindBuffer(GL_ARRAY_BUFFER, this->instanceData.id);
 }

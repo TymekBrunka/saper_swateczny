@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <glad/gl.h>
+#include "GamingClasses/SpriteInstancing.hpp"
 #include "SSBuffer.hpp"
 #include "glm/fwd.hpp"
 #include "rr.hpp"
@@ -108,21 +109,33 @@ int main() {
 	glCullFace(GL_BACK);
 
 	RR::Program program;
-	auto [vertex_shader, fragment_shader] = [&program]() {
+	RR::Program sprite_program;
+	auto [vertex_shader, fragment_shader, sprite_frag, sprite_vert] = [&program, &sprite_program]() {
 		std::string vertex_text = RR::readFile("src/shaders/skybox.vertex.glsl");
 		std::string fragment_text = RR::readFile("src/shaders/skybox.frag.glsl");
+		std::string sprite_vertex_text = RR::readFile("src/shaders/sprite.vertex.glsl");
+		std::string sprite_fragment_text = RR::readFile("src/shaders/sprite.frag.glsl");
 
 		try {
 			RR::Shader vertex_shader = RR::Shader(GL_VERTEX_SHADER, vertex_text.c_str());
 			RR::Shader fragment_shader = RR::Shader(GL_FRAGMENT_SHADER, fragment_text.c_str());
+			RR::Shader sprite_frag = RR::Shader(GL_VERTEX_SHADER, sprite_vertex_text.c_str());
+			RR::Shader sprite_vert = RR::Shader(GL_FRAGMENT_SHADER, sprite_fragment_text.c_str());
 			program
 				.attachShader(vertex_shader)
 				.attachShader(fragment_shader);
 			program.link();
 
+			sprite_program
+				.attachShader(sprite_vert)
+				.attachShader(sprite_frag);
+			program.link();
+
 			return std::make_tuple(
 					std::move(vertex_shader),
-					std::move(fragment_shader));
+					std::move(fragment_shader),
+					std::move(sprite_vert),
+					std::move(sprite_frag));
 	} catch(std::string ex) {
 		std::cout << ex << "\n";
 		exit(1);
@@ -140,78 +153,87 @@ int main() {
     RR::Texture2d sprites(img);
     stbi_image_free(img.data);
 
-    int* _tiles = new int[16];
-
-	glUseProgram(program.id);
+	glUseProgram(sprite_program.id);
     texture.bindToSlotAndName(program, 0, "skybox");
+    sprites.bindToSlotAndName(program, 1, "sprites");
 
-	skybox_vert skybox_verticies[] = {
-		//back
-		{{-1.0,  1.0, -1.0}, {0.75, 0.665}},
-		{{-1.0, -1.0, -1.0}, {0.75, 0.334}},
-		{{ 1.0, -1.0, -1.0}, {1.00, 0.334}},
-		{{ 1.0,  1.0, -1.0}, {1.00, 0.665}},
+	//skybox_vert skybox_verticies[] = {
+	//	//back
+	//	{{-1.0,  1.0, -1.0}, {0.75, 0.665}},
+	//	{{-1.0, -1.0, -1.0}, {0.75, 0.334}},
+	//	{{ 1.0, -1.0, -1.0}, {1.00, 0.334}},
+	//	{{ 1.0,  1.0, -1.0}, {1.00, 0.665}},
 
-		//front
-		{{ 1.0,  1.0,  1.0}, {0.25, 0.665}},
-		{{ 1.0, -1.0,  1.0}, {0.25, 0.334}},
-		{{-1.0, -1.0,  1.0}, {0.50, 0.334}},
-		{{-1.0,  1.0,  1.0}, {0.50, 0.665}},
+	//	//front
+	//	{{ 1.0,  1.0,  1.0}, {0.25, 0.665}},
+	//	{{ 1.0, -1.0,  1.0}, {0.25, 0.334}},
+	//	{{-1.0, -1.0,  1.0}, {0.50, 0.334}},
+	//	{{-1.0,  1.0,  1.0}, {0.50, 0.665}},
 
-		//right
-		{{ 1.0,  1.0, -1.0}, {0.00, 0.665}},
-		{{ 1.0, -1.0, -1.0}, {0.00, 0.334}},
-		{{ 1.0, -1.0,  1.0}, {0.25, 0.334}},
-		{{ 1.0,  1.0,  1.0}, {0.25, 0.665}},
+	//	//right
+	//	{{ 1.0,  1.0, -1.0}, {0.00, 0.665}},
+	//	{{ 1.0, -1.0, -1.0}, {0.00, 0.334}},
+	//	{{ 1.0, -1.0,  1.0}, {0.25, 0.334}},
+	//	{{ 1.0,  1.0,  1.0}, {0.25, 0.665}},
 
-		//left
-		{{-1.0,  1.0,  1.0}, {0.50, 0.665}},
-		{{-1.0, -1.0,  1.0}, {0.50, 0.334}},
-		{{-1.0, -1.0, -1.0}, {0.75, 0.334}},
-		{{-1.0,  1.0, -1.0}, {0.75, 0.665}},
+	//	//left
+	//	{{-1.0,  1.0,  1.0}, {0.50, 0.665}},
+	//	{{-1.0, -1.0,  1.0}, {0.50, 0.334}},
+	//	{{-1.0, -1.0, -1.0}, {0.75, 0.334}},
+	//	{{-1.0,  1.0, -1.0}, {0.75, 0.665}},
 
-		//bottom
-		{{-1.0,  -1.0, -1.0}, {0.499, 0.000}},
-		{{-1.0,  -1.0,  1.0}, {0.499, 0.332}},
-		{{ 1.0,  -1.0,  1.0}, {0.251, 0.332}},
-		{{ 1.0,  -1.0, -1.0}, {0.251, 0.000}},
+	//	//bottom
+	//	{{-1.0,  -1.0, -1.0}, {0.499, 0.000}},
+	//	{{-1.0,  -1.0,  1.0}, {0.499, 0.332}},
+	//	{{ 1.0,  -1.0,  1.0}, {0.251, 0.332}},
+	//	{{ 1.0,  -1.0, -1.0}, {0.251, 0.000}},
 
-		//top
-		{{-1.0,  1.0,  1.0}, {0.499, 0.667}},
-		{{-1.0,  1.0, -1.0}, {0.499, 1.000}},
-		{{ 1.0,  1.0, -1.0}, {0.251, 1.000}},
-		{{ 1.0,  1.0,  1.0}, {0.251, 0.667}},
+	//	//top
+	//	{{-1.0,  1.0,  1.0}, {0.499, 0.667}},
+	//	{{-1.0,  1.0, -1.0}, {0.499, 1.000}},
+	//	{{ 1.0,  1.0, -1.0}, {0.251, 1.000}},
+	//	{{ 1.0,  1.0,  1.0}, {0.251, 0.667}},
+	//};
+
+	//GLuint skybox_indecies[] = {
+	//	0, 1, 2, 0, 2, 3,
+	//	4, 5, 6, 4, 6, 7,
+	//	8, 9, 10, 8, 10, 11,
+	//	12, 13, 14, 12, 14, 15,
+	//	16, 17, 18, 16, 18, 19,
+	//	20, 21, 22, 20, 22, 23
+	//};
+
+	// GLuint skybox_va = RR::createVertexArray();
+	// glBindVertexArray(skybox_va);
+	// RR::VertexBuffer<skybox_vert> skybox_vb(skybox_verticies, sizeof(skybox_verticies) / sizeof(skybox_vert), GL_STATIC_DRAW);
+	// RR::IndexBuffer skybox_ib(skybox_indecies, sizeof(skybox_indecies) / sizeof(GLuint), GL_STATIC_DRAW);
+
+	// RR_AUTOATTRIB(skybox_vert, pos, GL_TRUE);
+	// RR_AUTOATTRIB(skybox_vert, uv, GL_TRUE);
+
+	GLint va = RR::createVertexArray();
+	glBindVertexArray(va);
+    SpriteInstancing sprite(sprite_program, 1);
+	SpriteVertex sv = {
+		{0.0,0.0},
+		{1.0,1.0},
+		{0.0,0.0},
+		{1.0,1.0}
 	};
-
-	GLuint skybox_indecies[] = {
-		0, 1, 2, 0, 2, 3,
-		4, 5, 6, 4, 6, 7,
-		8, 9, 10, 8, 10, 11,
-		12, 13, 14, 12, 14, 15,
-		16, 17, 18, 16, 18, 19,
-		20, 21, 22, 20, 22, 23
-	};
-
-	GLuint skybox_va = RR::createVertexArray();
-	glBindVertexArray(skybox_va);
-	RR::VertexBuffer<skybox_vert> skybox_vb(skybox_verticies, sizeof(skybox_verticies) / sizeof(skybox_vert), GL_STATIC_DRAW);
-	RR::IndexBuffer skybox_ib(skybox_indecies, sizeof(skybox_indecies) / sizeof(GLuint), GL_STATIC_DRAW);
-
-	RR_AUTOATTRIB(skybox_vert, pos, GL_TRUE);
-	RR_AUTOATTRIB(skybox_vert, uv, GL_TRUE);
-
-    
+	sprite.set(0, sv);
+	sprite.bind();
 
 	//Camera
 	camera.update_projection(800, 600, 120);
 	camera.computeMatricies();
 
-	const GLint rotatm4 = glGetUniformLocation(program.id, "rotat");
-	UmouseP = glGetUniformLocation(program.id, "mouse");
+	// const GLint rotatm4 = glGetUniformLocation(program.id, "rotat");
+	UmouseP = glGetUniformLocation(sprite_program.id, "mouse");
 
 	float currentFrame, lastFrame, deltaTime;
-	skybox_vb.bind();
-	skybox_ib.bind();
+	// skybox_vb.bind();
+	// skybox_ib.bind();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glfwGetFramebufferSize(window, &width, &height);
@@ -226,18 +248,19 @@ int main() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(program.id);
+        glUseProgram(sprite_program.id);
         // texture.bindToSlot(0);
-        glBindVertexArray(skybox_va);
+        glBindVertexArray(va);
 
-        glm::mat4 mat = glm::mat4(1.0f);
-        glm::mat4 rotat = glm::rotate(mat, glm::radians(currentFrame) * 20, glm::vec3(0.0f, 1.0f, 0.0f));
-        rotat = glm::rotate(rotat, glm::radians(currentFrame) * 20, glm::vec3(1.0f, 0.0f, 0.0f));
-		mat = camera.read().camera_skybox * rotat;
-        glUniformMatrix4fv(rotatm4, 1, GL_FALSE, (const GLfloat*) glm::value_ptr(mat));
+        // glm::mat4 mat = glm::mat4(1.0f);
+        // glm::mat4 rotat = glm::rotate(mat, glm::radians(currentFrame) * 20, glm::vec3(0.0f, 1.0f, 0.0f));
+        // rotat = glm::rotate(rotat, glm::radians(currentFrame) * 20, glm::vec3(1.0f, 0.0f, 0.0f));
+		// mat = camera.read().camera_skybox * rotat;
+        // glUniformMatrix4fv(rotatm4, 1, GL_FALSE, (const GLfloat*) glm::value_ptr(mat));
 
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawElements(GL_TRIANGLES, sizeof(skybox_indecies) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+        // // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glDrawElements(GL_TRIANGLES, sizeof(skybox_indecies) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
