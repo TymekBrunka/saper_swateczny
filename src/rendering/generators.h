@@ -68,7 +68,7 @@ namespace RR {
         );
     }
 
-    #define RR_ATTRIBDEVISOR1(x) glVertexAttribDivisor(location##x, 1)
+    #define RR_ATTRIBDEVISOR1(x) glVertexAttribDivisor(location_##x, 1)
 }
 
 #endif
